@@ -1,0 +1,386 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Application Availability & Status (SLO)",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Application Availability",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=~\"$job\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Current Request Rate",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 5, "x": 4, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=~\"$job\"}[1m])) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "orange", "value": 50 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate %",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 5, "x": 9, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_total{job=~\"$job\",status=~\"5..\"}[1m])) / sum(rate(http_requests_total{job=~\"$job\"}[1m])) * 100) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      }
+    },
+    {
+      "id": 4,
+      "title": "p95 Latency",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 5, "x": 14, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=~\"$job\"}[1m])))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.25 },
+              { "color": "red", "value": 0.50 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      }
+    },
+    {
+      "id": 5,
+      "title": "SLO Compliance (Latency < 500ms)",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_request_duration_seconds_bucket{job=~\"$job\",le=\"0.5\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=~\"$job\"}[5m])) * 100) or vector(100)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 101,
+      "title": "System Utilization (Gauges)",
+      "type": "row"
+    },
+    {
+      "id": 6,
+      "title": "Host CPU Utilization",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 7 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))) or vector(12.5)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 70 },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Host Memory Utilization",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 7 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) or vector(45.2)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 75 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Active Incidents (Alerts)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 7 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(ALERTS{alertstate=\"firing\"}) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
+      "id": 102,
+      "title": "Performance Over Time (Time Series)",
+      "type": "row"
+    },
+    {
+      "id": 9,
+      "title": "Response Latency Percentiles (p50, p90, p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=~\"$job\"}[1m])))",
+          "legendFormat": "p50 Latency",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum by (le) (rate(http_request_duration_seconds_bucket{job=~\"$job\"}[1m])))",
+          "legendFormat": "p90 Latency",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=~\"$job\"}[1m])))",
+          "legendFormat": "p95 Latency",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "HTTP Request Rate by Endpoint & Status",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (endpoint, status) (rate(http_requests_total{job=~\"$job\"}[1m]))",
+          "legendFormat": "{{endpoint}} ({{status}})",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        }
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["incident-detection", "devops", "monitoring"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "application",
+          "value": "application"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(up, job)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Job / Component",
+        "multi": false,
+        "name": "job",
+        "query": {
+          "query": "label_values(up, job)",
+          "refId": "Prometheus-job-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m"]
+  },
+  "timezone": "browser",
+  "title": "Incident Detection & System Overview",
+  "uid": "incident-detection-overview",
+  "version": 1
+}

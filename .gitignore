@@ -1,0 +1,5 @@
+.env
+.venv/
+
+data/
+prometheus_data/
