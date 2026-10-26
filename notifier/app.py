@@ -33,7 +33,13 @@ def forward_to_telegram(text: str):
 @app.post("/alerts")
 async def receive_alerts(request: Request):
     payload = await request.json()
-    received_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tz_name = os.getenv("TZ", "Asia/Kolkata")
+    try:
+        from zoneinfo import ZoneInfo
+        local_now = datetime.datetime.now(ZoneInfo(tz_name))
+    except Exception:
+        local_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+    received_at = local_now.strftime("%Y-%m-%d %H:%M:%S")
 
     alerts = payload.get("alerts", [])
     status = payload.get("status", "firing")
@@ -59,8 +65,17 @@ async def receive_alerts(request: Request):
         }
         NOTIFICATIONS.insert(0, entry)
 
+        if alert_status.lower() == "resolved":
+            header_prefix = "RESOLVED"
+        elif severity.lower() == "critical":
+            header_prefix = "CRITICAL"
+        elif severity.lower() == "warning":
+            header_prefix = "WARNING"
+        else:
+            header_prefix = "INFO"
+
         tg_text = (
-            f"*CRITICAL: {alert_name}*\n"
+            f"*{header_prefix}: {alert_name}*\n"
             f"*Target:* {instance}\n"
             f"*Status:* {alert_status.upper()}\n"
             f"*Severity:* {severity.upper()}\n"

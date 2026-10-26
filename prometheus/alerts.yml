@@ -2,13 +2,13 @@ groups:
   - name: application-alerts
     rules:
       - alert: InstanceDown
-        expr: up{job="application"} == 0
+        expr: up == 0
         for: 15s
         labels:
           severity: critical
         annotations:
-          summary: "Application is down"
-          description: "The application target ({{ $labels.instance }}) has been unreachable for more than 15 seconds."
+          summary: "Instance is down"
+          description: "Target ({{ $labels.job }} - {{ $labels.instance }}) has been unreachable for more than 15 seconds."
 
       - alert: HighLatency
         expr: |

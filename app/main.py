@@ -10,7 +10,7 @@ from prometheus_client import (
 )
 
 app = FastAPI(title="Alerting & Incident Detection Monitored App")
-1
+
 REQUEST_COUNT = Counter(
     "http_requests_total",
     "Total count of HTTP requests",

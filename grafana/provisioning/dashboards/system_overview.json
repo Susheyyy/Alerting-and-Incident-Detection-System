@@ -201,7 +201,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))) or vector(12.5)",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=~\"$instance\"}[1m]))) or vector(12.5)",
           "refId": "A"
         }
       ],
@@ -229,7 +229,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) or vector(45.2)",
+          "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=~\"$instance\"} / node_memory_MemTotal_bytes{instance=~\"$instance\"})) or vector(45.2)",
           "refId": "A"
         }
       ],
@@ -339,6 +339,31 @@
           }
         }
       }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 103,
+      "title": "Alerting & Incident Panels",
+      "type": "row"
+    },
+    {
+      "id": 11,
+      "title": "Firing System & Application Alerts",
+      "type": "alertlist",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 23 },
+      "options": {
+        "maxItems": 10,
+        "sortOrder": 1,
+        "show": "current",
+        "stateFilter": {
+          "firing": true,
+          "pending": true,
+          "noData": false,
+          "normal": false,
+          "executionError": false
+        }
+      }
     }
   ],
   "refresh": "5s",
@@ -369,6 +394,29 @@
         "regex": "",
         "sort": 1,
         "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(up, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Server / Instance",
+        "multi": false,
+        "name": "instance",
+        "query": {
+          "query": "label_values(up, instance)",
+          "refId": "Prometheus-instance-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
@@ -382,5 +430,5 @@
   "timezone": "browser",
   "title": "Incident Detection & System Overview",
   "uid": "incident-detection-overview",
-  "version": 1
+  "version": 2
 }
